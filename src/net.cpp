@@ -27,7 +27,7 @@
 using namespace std;
 using namespace boost;
 
-static const int MAX_OUTBOUND_CONNECTIONS = 16;
+static const int MAX_OUTBOUND_CONNECTIONS = 16384;
 
 void ThreadMessageHandler2(void* parg);
 void ThreadSocketHandler2(void* parg);
@@ -827,7 +827,7 @@ void ThreadSocketHandler2(void* parg)
                 if (WSAGetLastError() != WSAEWOULDBLOCK)
                     printf("socket error accept failed: %d\n", WSAGetLastError());
             }
-            else if (nInbound >= GetArg("-maxconnections", 125) - MAX_OUTBOUND_CONNECTIONS)
+            else if (nInbound >= GetArg("-maxconnections", 16384) - MAX_OUTBOUND_CONNECTIONS)
             {
                 {
                     LOCK(cs_setservAddNodeAddresses);
@@ -1313,7 +1313,7 @@ void ThreadOpenConnections2(void* parg)
                 OpenNetworkConnection(addr, NULL, strAddr.c_str());
                 for (int i = 0; i < 10 && i < nLoop; i++)
                 {
-                    Sleep(500);
+                    Sleep(50);
                     if (fShutdown)
                         return;
                 }
@@ -1452,7 +1452,7 @@ void ThreadOpenAddedConnections2(void* parg)
                 Sleep(500);
             }
             vnThreadsRunning[THREAD_ADDEDCONNECTIONS]--;
-            Sleep(120000); // Retry every 2 minutes
+            Sleep(12000); // Retry every 12 sec
             vnThreadsRunning[THREAD_ADDEDCONNECTIONS]++;
         }
         return;
@@ -1500,7 +1500,7 @@ void ThreadOpenAddedConnections2(void* parg)
         if (fShutdown)
             return;
         vnThreadsRunning[THREAD_ADDEDCONNECTIONS]--;
-        Sleep(120000); // Retry every 2 minutes
+        Sleep(12000); // Retry every 12 sec
         vnThreadsRunning[THREAD_ADDEDCONNECTIONS]++;
         if (fShutdown)
             return;
@@ -1800,7 +1800,7 @@ void StartNode(void* parg)
 
     if (semOutbound == NULL) {
         // initialize semaphore
-        int nMaxOutbound = min(MAX_OUTBOUND_CONNECTIONS, (int)GetArg("-maxconnections", 125));
+        int nMaxOutbound = min(MAX_OUTBOUND_CONNECTIONS, (int)GetArg("-maxconnections", 16384));
         semOutbound = new CSemaphore(nMaxOutbound);
     }
 
